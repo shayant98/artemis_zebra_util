@@ -86,7 +86,7 @@ class _MyAppState extends State<MyApp> {
               ),
               TextButton(
                 onPressed: () {
-                  printer!.connectToPrinter("192.168.1.9");
+                  printer!.connectToPrinter("192.168.1.8");
                 },
                 child: Text("Connect"),
               ),
