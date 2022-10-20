@@ -12,19 +12,25 @@ public class SwiftArtemisZebraPlugin: NSObject, FlutterPlugin {
         registrar.addMethodCallDelegate(instance, channel: channel)
     }
     
+    
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        switch (call.method){
+        switch call.method {
         case "getInstance":
-            let printer = Printer.getInstance(binaryMessenger: self.binaryMessenger!)
-            printers.append(printer)
-            result(printer.toString())
-            
-            
+            getInstance(result: result);
+            break
         default:
-            result("iOS " + UIDevice.current.systemVersion)
+            result("Unimplemented Method")
         }
-        
-        
     }
     
+    public func getInstance( result: @escaping FlutterResult){
+        let printer = Printer.getInstance(binaryMessenger: self.binaryMessenger!)
+        printers.append(printer)
+        result(printer.toString())
+    }
+    
+    
+
 }
+
+

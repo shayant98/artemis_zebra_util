@@ -1,16 +1,17 @@
-import 'package:artemis_zebra/ZebraPrinter.dart';
+import 'package:artemis_zebra/artemis_zebra.dart';
+import 'package:artemis_zebra/zebra_printer.dart';
+import 'package:artemis_zebra/zebra_printer_interface.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 
 import 'package:flutter/services.dart';
-import 'package:artemis_zebra/artemis_zebra.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -18,8 +19,9 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   String _platformVersion = 'Unknown';
-  ZebraPrinter? printer;
-  final _artemisZebraPlugin = ArtemisZebra();
+  final _artemisZebraUtilPlugin = ArtemisZebraUtil();
+  late ZebraPrinter printer;
+  List<ZebraPrinter> printers = [];
 
   @override
   void initState() {
@@ -33,8 +35,9 @@ class _MyAppState extends State<MyApp> {
     // Platform messages may fail, so we use a try/catch PlatformException.
     // We also handle the message potentially returning null.
     try {
-      // platformVersion =
-      //     await _artemisZebraPlugin.getInstance() ?? '[]';
+      printer = await ArtemisZebraUtil.getPrinterInstance(notifier: (_) => setState(() {
+        print("aa");
+      }));
     } on PlatformException {
       platformVersion = 'Failed to get platform version.';
     }
@@ -43,57 +46,57 @@ class _MyAppState extends State<MyApp> {
     // message was in flight, we want to discard the reply rather than calling
     // setState to update our non-existent appearance.
     if (!mounted) return;
-
-    // setState(() {
-    //   _platformVersion = platformVersion;
-    // });
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
+        floatingActionButton: FloatingActionButton(
+          onPressed: () async {
+            ZebraPrinter p = await ArtemisZebraUtil.getPrinterInstance(label: "BP TEST", notifier: (p) =>setState((){}));
+            printers.add(p);
+            setState(() {});
+          },
+        ),
         appBar: AppBar(
           title: const Text('Plugin example app'),
         ),
-        body: Center(
-          child: Column(
-            children: [
-              TextButton(
-                onPressed: () async {
-                  ZebraPrinter p = await _artemisZebraPlugin.getInstance(
-                    (name, ipAddress, isWifi) {
-                      print("Printer Found $name");
-                    },
-                    () {
-                      print("Discovery Done");
-                    },
-                    (errorCode, errorText) {
-                      print("Discovery Error");
-                    },
-                    (status, color) {
-                      print("Printer Status Change");
-                    },
-                    () {
-                      print("Permission Denied");
-                    },
-                  );
-                  setState(() {
-                    printer = p;
-                  });
-                },
-                child: Text("Find"),
-              ),
-              TextButton(
-                onPressed: () {
-                  printer!.connectToPrinter("192.168.1.8");
-                },
-                child: Text("Connect"),
-              ),
-              TextButton(
-                onPressed: () {
-                  String test = '''
-                  ^XA
+        body: Column(
+          children: [
+            ...printers
+                .map((e) => ListTile(
+                      onTap: (){
+                        e.isPrinterConnected();
+                      },
+                      onLongPress: (){
+                        e.disconnectPrinter();
+                      },
+                      leading: Icon(
+                        Icons.print,
+                        color: e.status.color,
+                      ),
+                      subtitle: Text("${e.instanceID} :${e.status.label}"),
+                      // trailing: Text(""),
+                      title: Row(
+                        children: [
+                          TextButton(
+                            onPressed: () {
+                              e.discoverPrinters();
+                              setState((){});
+                            },
+                            child: const Text("Find"),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              e.connectToPrinter("192.168.1.8");
+                            },
+                            child: const Text("Connect"),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              e.printData('''
+                ^XA
 
 ^FX Top section with logo, name and address.
 ^CF0,60
@@ -133,13 +136,16 @@ class _MyAppState extends State<MyApp> {
 ^CF0,190
 ^FO470,955^FDCA^FS
 
-^XZ''';
-                  printer!.print(test);
-                },
-                child: Text("Print"),
-              ),
-            ],
-          ),
+^XZ
+                ''');
+                            },
+                            child: const Text("Print"),
+                          ),
+                        ],
+                      ),
+                    ))
+                .toList()
+          ],
         ),
       ),
     );
