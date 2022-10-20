@@ -22,6 +22,10 @@ abstract class ArtemisZebraPrinterInterface {
   Future<bool> isPrinterConnected() {
     throw UnimplementedError('isPrinterConnected() has not been implemented.');
   }
+
+  Future<bool> checkPermissions() {
+    throw UnimplementedError('checkPermissions() has not been implemented.');
+  }
 }
 
 enum PrinterType { wifi, bluetooth }
@@ -110,7 +114,13 @@ class FoundPrinter {
   FoundPrinter({required this.name, required this.address, required this.type});
 
   factory FoundPrinter.fromJson(json)=>
-      FoundPrinter(name: json["name"],
+      FoundPrinter(name: json["name"]??"Unknown",
         address: json["address"],
         type: PrinterType.values.firstWhere((element) => element.id == json["type"]),);
+
+  @override
+  String toString() {
+    // TODO: implement toString
+    return '(${type.label})$name => $address';
+  }
 }

@@ -57,6 +57,9 @@ class _MyAppState extends State<MyApp> {
             ZebraPrinter p = await ArtemisZebraUtil.getPrinterInstance(label: "BP TEST", notifier: (p) =>setState((){}));
             printers.add(p);
             setState(() {});
+            // ArtemisZebraUtil().getPlatformVersion().then((value){
+            //   print(value);
+            // });
           },
         ),
         appBar: AppBar(
@@ -82,13 +85,16 @@ class _MyAppState extends State<MyApp> {
                         children: [
                           TextButton(
                             onPressed: () {
-                              e.discoverPrinters();
-                              setState((){});
+                              print("sda");
+                              e.discoverPrinters().then((value){
+                                print(value);
+                              });
                             },
                             child: const Text("Find"),
                           ),
                           TextButton(
                             onPressed: () {
+                              // print(e.foundPrinters.first.address);
                               e.connectToPrinter("192.168.1.8");
                             },
                             child: const Text("Connect"),
