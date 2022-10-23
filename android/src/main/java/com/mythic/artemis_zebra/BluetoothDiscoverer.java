@@ -1,7 +1,4 @@
-//
-// Source code recreated from a .class file by IntelliJ IDEA
-// (powered by Fernflower decompiler)
-//
+
 
 package com.mythic.artemis_zebra;
 
@@ -25,11 +22,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class BluetoothDiscoverer {
-    private Context mContext;
-    private DiscoveryHandler mDiscoveryHandler;
+    private final Context mContext;
+    private final DiscoveryHandler mDiscoveryHandler;
     BtReceiver btReceiver;
     BtRadioMonitor btMonitor;
-    private DeviceFilter deviceFilter;
+    private final DeviceFilter deviceFilter;
 
     private BluetoothDiscoverer(Context var1, DiscoveryHandler var2, DeviceFilter var3) {
         this.mContext = var1;
@@ -37,7 +34,7 @@ public class BluetoothDiscoverer {
         this.mDiscoveryHandler = var2;
     }
 
-    public static void findPrinters(Context var0, DiscoveryHandler var1, DeviceFilter var2) throws ConnectionException {
+    public static void findPrinters(Context var0, DiscoveryHandler var1, DeviceFilter var2) {
         BluetoothAdapter var3 = BluetoothAdapter.getDefaultAdapter();
         if (var3 == null) {
             var1.discoveryError("No bluetooth radio found");
@@ -53,7 +50,7 @@ public class BluetoothDiscoverer {
 
     }
 
-    public static void findPrinters(Context var0, DiscoveryHandler var1) throws ConnectionException {
+    public static void findPrinters(Context var0, DiscoveryHandler var1) {
         DeviceFilter var2 = new DeviceFilter() {
             public boolean shouldAddPrinter(BluetoothDevice var1) {
                 return true;

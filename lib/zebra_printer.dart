@@ -20,6 +20,7 @@ class ZebraPrinter implements ArtemisZebraPrinterInterface {
   }
 
   PrinterStatus status = PrinterStatus.disconnected;
+  bool isRotated = false;
   List<FoundPrinter> foundPrinters = [];
 
   @override
@@ -63,6 +64,12 @@ class ZebraPrinter implements ArtemisZebraPrinterInterface {
   Future<bool> printData(String data) async {
     status = PrinterStatus.printing;
     notifier(this);
+
+    if (!data.contains("^PON")) data = data.replaceAll("^XA", "^XA^PON");
+    if (isRotated) {
+      data = data.replaceAll("^PON", "^POI");
+    }
+
     final bool result = await channel.invokeMethod("printData", {"data": data});
     if (result) {
       status = PrinterStatus.ready;
@@ -118,5 +125,43 @@ class ZebraPrinter implements ArtemisZebraPrinterInterface {
       notifier(this);
       log("printerDisconnected");
     }
+  }
+
+  setSettings(Command setting, dynamic values) {
+    String command = "";
+    switch (setting) {
+      case Command.mediaType:
+        if (values == MediaType.blackMark) {
+          command = '''
+          ! U1 setvar "media.type" "label"
+          ! U1 setvar "media.sense_mode" "bar"
+          ''';
+        } else if (values == MediaType.journal) {
+          command = '''
+          ! U1 setvar "media.type" "journal"
+          ''';
+        } else if (values == MediaType.label) {
+          command = '''
+          ! U1 setvar "media.type" "label"
+           ! U1 setvar "media.sense_mode" "gap"
+          ''';
+        }
+
+        break;
+      case Command.calibrate:
+        command = '''~jc^xa^jus^xz''';
+        break;
+      case Command.darkness:
+        command = '''! U1 setvar "print.tone" "$values"''';
+        break;
+    }
+
+    if (setting == Command.calibrate) {
+      command = '''~jc^xa^jus^xz''';
+    }
+
+    try {
+      channel.invokeMethod("setSettings", {"SettingCommand": command});
+    } on PlatformException catch (e) {}
   }
 }

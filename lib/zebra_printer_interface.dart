@@ -124,3 +124,6 @@ class FoundPrinter {
     return '(${type.label})$name => $address';
   }
 }
+
+enum MediaType { label, blackMark, journal }
+enum Command { calibrate, mediaType, darkness }
